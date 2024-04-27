@@ -44,9 +44,6 @@ methods: {
           }
         )
         .then((response) => {
-          // Gestisci la risposta dal backend
-        //   console.log("Risposta dal backend:", response.data);
-          
             if(response.data.success == true){
               this.message.name = null,
               this.message.last_name = null,
@@ -83,7 +80,7 @@ methods: {
        scrollToTop() {
                 window.scrollTo({
                     top: 0,
-                    behavior: "smooth" // Puoi impostare questo su "smooth" per avere uno scorrimento fluido, o "auto" per uno scorrimento istantaneo
+                    behavior: "smooth" 
                 });
             }
 },
@@ -92,8 +89,7 @@ methods: {
         axios
             .get(`http://localhost:8000/api/apartments/${this.$route.params.slug}`)
             .then((response) => {
-                this.apartment = response.data.result;
-                // console.log("risposta api", response);        
+                this.apartment = response.data.result;      
             })
             
             .catch((error) => {
@@ -113,7 +109,6 @@ methods: {
                 ipAddress: this.term
             }
             ).then((response)=>{
-                // console.log('risposta view',response)
                 
             })
         });

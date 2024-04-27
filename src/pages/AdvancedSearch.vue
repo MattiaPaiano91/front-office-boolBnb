@@ -83,11 +83,6 @@ export default {
                     data.results.forEach(result => {
                         const suggestion = document.createElement("li");
                         suggestion.classList.add('suggestion-list')
-                        //  suggestion.style.backgroundColor = "white"; // Applica lo stile inline
-                        //   suggestion.style.borderRadius = "10px";
-                        //   suggestion.style.padding = "4px";
-                        //   suggestion.style.listStyle = "none";
-                        //   suggestion.style.width = "200px";
                         suggestion.textContent = result.address.freeformAddress;
                         suggestion.addEventListener("click", function() {
                           store.userSearch = result.address.freeformAddress;
@@ -170,6 +165,7 @@ export default {
                           <div style="width:200px" class="mt-3 marker-content text-center">
                             <h5 class="m-0 ">Appartamento: ${this.store.FilteredApartments[i].name}</h5>
                             <div>${this.store.FilteredApartments[i].address}</div>
+                            
                           </div>
                       `);
                      
