@@ -20,7 +20,7 @@ export default {
         <router-link class="link" :to="{name:'apartment-show', params: { slug: apartment.slug }}">
             <div  id="apartment-card">
                 <!-- SPONSORSHIP PILL -->
-                <!-- <span v-if="apartment.sponsorships.length > 0" class="badge rounded-pill text-bg-light">In evidenza</span> -->
+               
                 <div class="img-box">
                     <div class="img-wrapper">
                         <img v-if="apartment.img_cover_path" :src="'http://127.0.0.1:8000/storage/'+apartment.img_cover_path" alt="Cover Image">

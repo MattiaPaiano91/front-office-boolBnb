@@ -1,5 +1,5 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createApp } from 'vue';
+import App from './App.vue';
 import { router } from "./router";
 import { gsap } from "gsap";
 
@@ -15,17 +15,19 @@ createApp(App).use(router).mount('#app')
       rotate: 180,
       ease: "power2",
     });
-    // gsap.fromTo(
-    //   ".my-welcome",
-    //   { autoAlpha: 1 },
-    //   { autoAlpha: 0, duration: 1.5, delay: 2 }
-    // );
 
-    gsap.to(".my-welcome", {
+    let tl= gsap.timeline();
+
+    tl.to(".my-welcome", {
       x: -3000,
       duration: 3,
       ease: "power3",
       delay: 2,
     });
+
+    tl.to(".my-welcome",{
+      autoAlpha:0
+    });
+
     
     

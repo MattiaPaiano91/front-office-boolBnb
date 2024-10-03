@@ -69,7 +69,7 @@ export default {
                             </router-link>
                         </li>
                         <li class="nav-item mx-4">
-                            <a href="http://localhost:8000/" target="_blank" class="text-black text-decoration-none ">
+                            <a href="http://127.0.0.1:8000" target="_blank" class="text-black text-decoration-none ">
                                 <span class="hov-underline">
                                     Area Personale
                                 </span>
@@ -79,8 +79,8 @@ export default {
 
                     <!-- Login / Sign up -->
                     <div class="login-box d-flex flex-column flex-lg-row justify-content-center align-items-center gap-5">
-                        <a href="http://localhost:8000/login" class="login hov-underline"> Login </a>
-                        <a href="http://localhost:8000/register" class="my-primary-button"> Registrati </a>
+                        <a href="http://127.0.0.1:8000/login" class="login hov-underline"> Login </a>
+                        <a href="http://127.0.0.1:8000/register" class="my-primary-button"> Registrati </a>
                     </div>
                 </div>
             </div>
@@ -102,6 +102,7 @@ header{
     position: fixed;
     z-index: 3;
     font-size: 1.2rem;
+    background-color: #F5F5F7;
 
     .navbar-brand, .register{
         margin: 0 20px;
