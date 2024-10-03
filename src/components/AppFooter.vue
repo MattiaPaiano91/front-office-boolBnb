@@ -12,9 +12,6 @@ export default {
       modules: [Autoplay],
       slider: [
         {
-          icon: "client-logo-colored-01.png",
-        },
-        {
           icon: "client-logo-colored-02.png",
         },
         {
@@ -348,7 +345,7 @@ export default {
             spaceBetween: 40,
           },
           '1024': {
-            slidesPerView: 5,
+            slidesPerView: 4,
             spaceBetween: 50,
           },
         }"

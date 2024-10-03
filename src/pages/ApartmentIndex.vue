@@ -10,11 +10,13 @@ import "swiper/css";
 import { Autoplay } from "swiper/modules";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
+import { Exception } from "sass";
 
 export default {
   data() {
     return {
       store,
+      suggestionResult: null,
       img_carousel: [
         "pexels-casia-charlie-2433467.jpg",
         "pexels-christian-heitz-842711.jpg",
@@ -30,6 +32,11 @@ export default {
     };
   },
   methods: {
+    saveAddress(elem) {
+      store.userSearch = elem;
+      store.isChecked = true;
+      this.suggestionResult = null
+    },
     callTheApartmentsNormal() {
       axios
         //faccio la prima chiamata al mio backend per ricevere tutti gli appartamenti del database
@@ -81,61 +88,51 @@ export default {
             })
             .then((response) => {
               this.store.FilteredApartments = response.data.result;
-              console.log(this.store.FilteredApartments)
-               this.store.sponsoredFilteredApartments = [];
-            this.store.unSponsoredFilteredApartments = [];
-            for (let i = 0; i < this.store.FilteredApartments.length; i++) {
-              if (
-                this.store.FilteredApartments[i].sponsorships.length > 0 &&
-                this.store.FilteredApartments[i].availability == 1
-              ) {
-                this.store.sponsoredFilteredApartments.push(this.store.FilteredApartments[i]);
+              this.store.sponsoredFilteredApartments = [];
+              this.store.unSponsoredFilteredApartments = [];
+              for (let i = 0; i < this.store.FilteredApartments.length; i++) {
+                if (
+                  this.store.FilteredApartments[i].sponsorships.length > 0 &&
+                  this.store.FilteredApartments[i].availability == 1
+                ) {
+                  this.store.sponsoredFilteredApartments.push(
+                    this.store.FilteredApartments[i]
+                  );
+                }
               }
-            }
-            for (let i = 0; i < this.store.FilteredApartments.length; i++) {
-              if (
-                this.store.FilteredApartments[i].sponsorships.length == 0 &&
-                this.store.FilteredApartments[i].availability == 1
-              ) {
-                this.store.unSponsoredFilteredApartments.push(this.store.FilteredApartments[i]);
+              for (let i = 0; i < this.store.FilteredApartments.length; i++) {
+                if (
+                  this.store.FilteredApartments[i].sponsorships.length == 0 &&
+                  this.store.FilteredApartments[i].availability == 1
+                ) {
+                  this.store.unSponsoredFilteredApartments.push(
+                    this.store.FilteredApartments[i]
+                  );
+                }
               }
-            }
             });
         });
     },
 
     handleInputClick() {
-      // Qui puoi inserire la logica da eseguire quando l'utente clicca sull'input
-      let suggestionsContainer = document.getElementById("suggestions");
       let addressInput = this.store.userSearch;
+
       const input = addressInput.trim();
+
       store.isChecked = false;
-      if (input.length === 0) {
-        suggestionsContainer.innerHTML = "";
-        return;
-      }
 
       fetch(
         `https://api.tomtom.com/search/2/search/${input}.json?key=03zxGHB5yWE9tQEW9M7m9s46vREYKHct`
       )
         .then((response) => response.json())
         .then((data) => {
-          suggestionsContainer.innerHTML = ""; // Svuota i suggerimenti precedenti
-
-          data.results.forEach((result) => {
-            const suggestion = document.createElement("li");
-            suggestion.classList.add("suggestion-list");
-            suggestion.textContent = result.address.freeformAddress;
-            suggestion.addEventListener("click", function () {
-              store.userSearch = result.address.freeformAddress;
-              suggestionsContainer.innerHTML = "";
-              store.isChecked = true;
-            });
-            suggestionsContainer.appendChild(suggestion);
-          });
-          document.addEventListener("click", function () {
-            suggestionsContainer.innerHTML = "";
-          });
+          try {
+            if (data || data != undefined) {
+              this.suggestionResult = data.results;
+            }
+          } catch (e) {
+            console.log(e.message);
+          }
         })
         .catch((error) =>
           console.error("Errore durante il recupero dei suggerimenti:", error)
@@ -149,11 +146,8 @@ export default {
     SwiperSlide,
   },
   mounted() {
-    if(this.store.text){
-    
-    }
-    else{
-      
+    if (this.store.text) {
+    } else {
     }
     gsap.registerPlugin(TextPlugin);
     gsap.from(".sponsorized", {
@@ -162,23 +156,41 @@ export default {
       delay: 3,
       ease: "power4",
     });
-    if(this.store.text){
-        setTimeout(() => {
+    if (this.store.text) {
+      setTimeout(() => {
         this.callTheApartmentsNormal();
-    
-  
-        }, 2200);
-        setTimeout(() =>{
-          gsap.to( '.text' ,{text:'Scegli un appartamento, ti ci portiamo noi', duration:2, ease:'linear'})
-          gsap.fromTo( '.text' ,{width:0},{width: '50%', duration:2, ease:'linear'})
-        },3000)
-        this.store.text = false
+      }, 2200);
+      setTimeout(() => {
+        gsap.to(".text", {
+          text: "Scegli un appartamento, ti ci portiamo noi",
+          duration: 2,
+          ease: "linear",
+        });
+        gsap.fromTo(
+          ".text",
+          { width: 0 },
+          { width: "50%", duration: 2, ease: "linear" }
+        );
+      }, 3000);
+      this.store.text = false;
+    } else {
+      this.callTheApartmentsNormal();
+      gsap.to(".text", {
+        text: "Scegli un appartamento, ti ci portiamo noi",
+        duration: 2,
+        ease: "linear",
+      });
+      gsap.fromTo(
+        ".text",
+        { width: 0 },
+        { width: "50%", duration: 2, ease: "linear" }
+      );
     }
-    else{
-        this.callTheApartmentsNormal();
-        gsap.to( '.text' ,{text:'Scegli un appartamento, ti ci portiamo noi', duration:2, ease:'linear'})
-        gsap.fromTo( '.text' ,{width:0},{width: '50%', duration:2, ease:'linear'})
-    }
+    window.addEventListener("click", function () {
+      let suggestionContainer = document.getElementById("suggestions");
+
+      if (suggestionContainer != undefined) suggestionContainer.innerHTML = "";
+    });
 
     window.addEventListener("scroll", function () {
       var scrollButton = document.querySelector(".scroll-to-top");
@@ -215,24 +227,21 @@ export default {
             delay: 2500,
           }"
           :modules="modules"
-          class="mySwiper p-0 position-relative "
+          class="mySwiper p-0 position-relative"
         >
           <swiper-slide v-for="(elem, i) in img_carousel">
             <img :src="'public/img/img-carousel/' + elem" alt="" />
           </swiper-slide>
-          <p class=" position-absolute text"></p>
+          <p class="position-absolute text"></p>
         </swiper>
       </div>
     </div>
     <div class="row">
       <div class="col-12">
         <div class="d-flex flex-column align-items-center">
-          <!-- DA SISTEMARE CENTRATURA DELLA LABEL -->
           <div class="d-flex flex-column mt-5">
-            <div class="px-2">
-              <label for="first-search mt-2"
-                >Cerca Appartamenti entro 20km:</label
-              >
+            <div class="px-2 text-center">
+              Cerca Appartamenti nel raggio di 20km:
             </div>
             <div class="d-flex">
               <input
@@ -264,9 +273,15 @@ export default {
               </button>
             </div>
           </div>
-          <div class="position-relative list-box">
-            <ul id="suggestions">
-              <!--SUGGERIMENTI INDIRIZZI GENERATI DA TOMTOM-->
+          <div v-if="suggestionResult != null" class="position-relative list-box">
+            <ul  id="suggestions">
+              <li
+                class="suggestion-item"
+                @click="saveAddress(elem.address.freeformAddress)"
+                v-for="elem in suggestionResult"
+              >
+                {{ elem.address.freeformAddress }}
+              </li>
             </ul>
           </div>
           <div class="scroll-to-top" @click="scrollToTop">
@@ -356,17 +371,26 @@ export default {
 }
 
 .list-box {
-  width: 500px;
+  width: 600px;
   #suggestions {
-    background-color: white;
-    /* border: 1px solid #ec5a64; */
-    border-radius: 5px;
-    padding: 0;
+    background-color: rgba(0, 0, 0, 0.22);
+    padding: 15px;
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     z-index: 2;
+    border: 2px solid #ec5a64;
+    border-radius: 10px;
+    .suggestion-item {
+      padding: 10px;
+      background-color: white;
+      list-style: none;
+      border-bottom: 1px solid lightgray;
+      &:hover {
+        background-color: lightgray;
+      }
+    }
   }
 }
 
@@ -384,18 +408,18 @@ export default {
   line-height: 45px;
   cursor: pointer;
   z-index: 999;
-  transition: transform 0.3s ease; /* Aggiungi transizione fluida per l'ingrandimento */
+  transition: transform 0.3s ease;
 
   &:hover {
-    transform: scale(1.1); /* Inganna l'elemento del 10% durante l'hover */
-    box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 0.5); /* Aggiungi ombra */
+    transform: scale(1.1);
+    box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 0.5);
   }
 }
 
-.text{
+.text {
   top: 50%;
   left: 50%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   z-index: 3;
   font-size: 2rem;
   font-weight: 800;
@@ -411,6 +435,7 @@ export default {
 .scroll-to-top i {
   font-size: 20px;
 }
+
 // slider-top
 .swiper {
   width: 100%;
@@ -421,8 +446,6 @@ export default {
   text-align: center;
   font-size: 18px;
   background: #fff;
-
-  /* Center slide text vertically */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -439,39 +462,43 @@ export default {
   margin-left: auto;
   margin-right: auto;
 }
-@media (max-width: 575px) {
-  .user-search {
-  width: 200px;
-  border-radius: 50px;
-  .text{
-   display: none;
+
+@media (max-width: 1400px) {
+  .text {
+    width: 80% !important;
+    font-size: 1.5rem;
   }
 }
 
-#suggestions{
-  width: 60%;
-}
-}
-
-@media (max-width: 768px) {
- .text{
-   display: none;
+@media (max-width: 1200px) {
+  .text {
+    width: 70% !important;
   }
 }
 
 @media (max-width: 992px) {
-.text{
-   width: 80%!important;
-   font-size: 0.5rem !important;
+  .text {
+    font-size: 1.2rem;
   }
 }
 
-
-@media (max-width: 1200px) {
-  .text{
-   width: 70% !important;
-   font-size: 2rem !important;
+@media (max-width: 768px) {
+  .text {
+    display: none;
   }
 }
 
+@media (max-width: 575px) {
+  .user-search {
+    width: 200px;
+    border-radius: 50px;
+    .text {
+      display: none;
+    }
+  }
+
+  #suggestions {
+    width: 60%;
+  }
+}
 </style>
