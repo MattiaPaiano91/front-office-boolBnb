@@ -10,7 +10,6 @@ import "swiper/css";
 import { Autoplay } from "swiper/modules";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-import { Exception } from "sass";
 
 export default {
   data() {
@@ -387,6 +386,7 @@ export default {
       background-color: white;
       list-style: none;
       border-bottom: 1px solid lightgray;
+      transition: all 0.1s ease-in-out;
       &:hover {
         background-color: lightgray;
       }
