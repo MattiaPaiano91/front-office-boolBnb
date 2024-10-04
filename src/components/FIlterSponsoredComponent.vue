@@ -45,7 +45,7 @@ export default {
                             A {{ apartment.distance.toFixed(1) }} km di distanza. 
                         </li>
                         <li v-else>
-                            A {{ apartment.distance }},5 km di distanza. 
+                            A ~ 0,5 km di distanza. 
                         </li>
                     </ul>
                 </div>

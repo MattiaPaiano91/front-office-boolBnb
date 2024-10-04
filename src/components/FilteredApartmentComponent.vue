@@ -41,11 +41,11 @@ export default {
                                 <i :class="'fa-solid'  + ' '  + service.icon"></i>&nbsp&nbsp
                             </span>
                         </li>
-                         <li v-if="Math.floor(apartment.distance) != 0">
+                         <li v-if="apartment.distance >= 1">
                             A {{ apartment.distance.toFixed(1) }} km di distanza. 
                         </li>
                         <li v-else>
-                            A {{ apartment.distance }},5 km di distanza. 
+                            A ~ 0,5 km di distanza. 
                         </li>
                     </ul>
                 </div>

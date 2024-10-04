@@ -35,7 +35,7 @@ export default {
                         <li>
                             Prezzo: {{apartment.price }}€ per notte.
                         </li>
-                        <li>
+                        <li class="services">
                             Servizi:&nbsp&nbsp 
                             <span v-for="service in apartment.services">
                                 <i id="icon-service" :class="'fa-solid'  + ' '  + service.icon"></i>&nbsp
@@ -157,14 +157,26 @@ export default {
 @media (min-width: 1200px) {
     .my-card {
         width: calc(100% / 4);
+         .services{
+            font-size: 0.8rem;
+
+        }
     }
 }
 @media (min-width: 1400px) {
     .my-card {
-        width: calc(100% / 5);
+        //  .services{
+        //     font-size: 1.2rem;
+
+        // }
     }
 }
-// #icon-service{
-//  font-size: 10px;
-// }
+
+@media (min-width: 1600px) {
+    .my-card {
+        width: calc(100% / 5);
+      
+    }
+}
+
 </style>
