@@ -33,8 +33,11 @@ export default {
   methods: {
     saveAddress(elem) {
       store.userSearch = elem;
+
       store.isChecked = true;
-      this.suggestionResult = null
+
+      this.suggestionResult = null;
+
     },
     callTheApartmentsNormal() {
       axios
@@ -114,28 +117,33 @@ export default {
     },
 
     handleInputClick() {
+
       let addressInput = this.store.userSearch;
 
       const input = addressInput.trim();
 
       store.isChecked = false;
 
-      fetch(
-        `https://api.tomtom.com/search/2/search/${input}.json?key=03zxGHB5yWE9tQEW9M7m9s46vREYKHct`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          try {
-            if (data || data != undefined) {
-              this.suggestionResult = data.results;
+      if (input.length >= 3) {
+        
+        fetch(
+          `https://api.tomtom.com/search/2/search/${input}.json?key=03zxGHB5yWE9tQEW9M7m9s46vREYKHct`
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            try {
+              if (data || data != undefined) {
+                this.suggestionResult = data.results;
+              }
+            } catch (e) {
+              console.log(e.message);
             }
-          } catch (e) {
-            console.log(e.message);
-          }
-        })
-        .catch((error) =>
-          console.error("Errore durante il recupero dei suggerimenti:", error)
-        );
+          })
+          .catch((error) =>
+            console.error("Errore durante il recupero dei suggerimenti:", error)
+          );
+      }
+
     },
   },
   components: {

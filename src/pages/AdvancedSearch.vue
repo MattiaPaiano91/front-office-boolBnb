@@ -1,4 +1,5 @@
 <script>
+
 import axios from "axios";
 
 import { store } from "../../store";
@@ -21,6 +22,8 @@ export default {
       nBeds: "",
       radius: 20,
       services: [],
+      suggestionResult: null,
+      center : [0,0]
     };
   },
   components: {
@@ -29,6 +32,16 @@ export default {
     AppFooter,
   },
   methods: {
+     saveAddress(elem) {
+
+      store.userSearch = elem;
+
+      store.isChecked = true;
+
+      this.suggestionResult = null;
+
+    }
+    ,
     callTheServices() {
       axios
         .get("http://localhost:8000/api/services", {
@@ -51,21 +64,45 @@ export default {
         )
         .then((responseOne) => {
           this.store.firstApi = responseOne.data.results[0].position;
+
+          //inizializzo il centro della mappa
+          this.center = Object.values(responseOne.data.results[0].position);
+
           axios
             .get("http://localhost:8000/api/getApartments", {
               params: {
                 lat: this.store.firstApi.lat,
-
                 lon: this.store.firstApi.lon,
               },
             })
             .then((response) => {
               this.store.FilteredApartments = response.data.result;
+              this.store.sponsoredFilteredApartments = [];
+              this.store.unSponsoredFilteredApartments = [];
+              for (let i = 0; i < this.store.FilteredApartments.length; i++) {
+                if (
+                  this.store.FilteredApartments[i].sponsorships.length > 0 &&
+                  this.store.FilteredApartments[i].availability == 1
+                ) {
+                  this.store.sponsoredFilteredApartments.push(
+                    this.store.FilteredApartments[i]
+                  );
+                }
+              }
+              for (let i = 0; i < this.store.FilteredApartments.length; i++) {
+                if (
+                  this.store.FilteredApartments[i].sponsorships.length == 0 &&
+                  this.store.FilteredApartments[i].availability == 1
+                ) {
+                  this.store.unSponsoredFilteredApartments.push(
+                    this.store.FilteredApartments[i]
+                  );
+                }
+              }
             });
         });
     },
     handleInputClick() {
-      let suggestionsContainer = document.getElementById("suggestions");
 
       let addressInput = this.store.userSearch;
 
@@ -73,42 +110,30 @@ export default {
 
       store.isChecked = false;
 
-      if (input.length === 0) {
-        suggestionsContainer.innerHTML = "";
-        return;
+      if (input.length >= 3) {
+        
+        fetch(
+          `https://api.tomtom.com/search/2/search/${input}.json?key=03zxGHB5yWE9tQEW9M7m9s46vREYKHct`
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            try {
+              if (data || data != undefined) {
+                this.suggestionResult = data.results;
+                
+                
+              }
+            } catch (e) {
+              console.log(e.message);
+            }
+          })
+          .catch((error) =>
+            console.error("Errore durante il recupero dei suggerimenti:", error)
+          );
       }
 
-      fetch(
-        `https://api.tomtom.com/search/2/search/${input}.json?key=03zxGHB5yWE9tQEW9M7m9s46vREYKHct`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          suggestionsContainer.innerHTML = ""; 
-
-          data.results.forEach((result) => {
-
-            const suggestion = document.createElement("li");
-
-            suggestion.classList.add("suggestion-list");
-
-            suggestion.textContent = result.address.freeformAddress;
-
-            suggestion.addEventListener("click", function () {
-              store.userSearch = result.address.freeformAddress;
-              suggestionsContainer.innerHTML = "";
-              store.isChecked = true;
-            });
-
-            suggestionsContainer.appendChild(suggestion);
-          });
-          document.addEventListener("click", function () {
-            suggestionsContainer.innerHTML = "";
-          });
-        })
-        .catch((error) =>
-          console.error("Errore durante il recupero dei suggerimenti:", error)
-        );
     },
+    
     advancedResearch() {
       axios
         .get("http://localhost:8000/api/advancedResearch", {
@@ -163,6 +188,7 @@ export default {
           }
         });
       setTimeout(() => {
+
         this.center = [this.store.firstApi.lon, this.store.firstApi.lat];
 
         this.myMap = tt.map({
@@ -174,6 +200,7 @@ export default {
 
           zoom: 10,
         });
+
         let map = this.myMap;
         for (let i = 0; i < this.store.FilteredApartments.length; i++) {
 
@@ -274,7 +301,7 @@ export default {
         }
       }, 1000);
     },
-
+ 
     scrollToTop() {
 
       window.scrollTo({
@@ -283,127 +310,134 @@ export default {
 
         behavior: "smooth",
       });
+
     },
+
   },
+
   mounted() {
 
     this.scrollToTop();
 
     this.callTheServices();
 
-    setTimeout(() => {
-      this.center = [this.store.firstApi.lon, this.store.firstApi.lat];
+    this.center = [
 
-      this.myMap = tt.map({
+      this.store.firstApi.lon,
 
-        key: "03zxGHB5yWE9tQEW9M7m9s46vREYKHct",
+      this.store.firstApi.lat
+      
+    ];
+    this.myMap = tt.map({
 
-        container: "ma",
+      key: "03zxGHB5yWE9tQEW9M7m9s46vREYKHct",
 
-        center: this.center,
+      container: "ma",
 
-        zoom: 10,
+      center: this.center,
+
+      zoom: 10,
+
+    });
+    let map = this.myMap;
+
+    for (let i = 0; i < this.store.FilteredApartments.length; i++) {
+
+      var markerHeight = 50,
+
+        markerRadius = 10,
+
+        linearOffset = 25;
+
+      var popupOffsets = {
+        top: [0, 0],
+
+        "top-left": [0, 0],
+
+        "top-right": [0, 0],
+
+        bottom: [0, -markerHeight],
+
+        "bottom-left": [
+
+          linearOffset,
+
+          (markerHeight - markerRadius + linearOffset) * -1,
+
+        ],
+        "bottom-right": [
+
+          -linearOffset,
+
+          (markerHeight - markerRadius + linearOffset) * -1,
+
+        ],
+        left: [markerRadius, (markerHeight - markerRadius) * -1],
+
+        right: [-markerRadius, (markerHeight - markerRadius) * -1],
+
+      };
+      var popup = new tt.Popup({ offset: popupOffsets });
+
+      popup.setHTML(`
+                        <div style="width:200px; height:150px; object-fit: contain;" class="popup-box mt-2 ">
+                          <img style="width:100%; height:100%; border-radius:10px;" src="http://127.0.0.1:8000/storage/${this.store.FilteredApartments[i].img_cover_path}" alt="Apartment Image">
+                        </div>
+                        <div style="width:200px" class="mt-3 marker-content text-center">
+                          <h5 class="m-0 ">Appartamento: ${this.store.FilteredApartments[i].name}</h5>
+                          <div>${this.store.FilteredApartments[i].address}</div>
+                        </div>
+                    `);
+
+      popup.addClassName("popup-box");
+
+      var marker = new tt.Marker()
+
+        .setLngLat({
+
+          lng: this.store.FilteredApartments[i].longitude,
+
+          lat: this.store.FilteredApartments[i].latitude,
+
+        })
+
+        .setPopup(popup)
+
+
+        .addTo(map);
+
+      var markerElement = marker.getElement();
+
+      markerElement.style.backgroundColor = "white";
+
+      markerElement.style.width = "80px";
+
+      markerElement.style.height = "20px";
+
+      markerElement.style.lineHeight = "20px";
+
+      markerElement.style.verticalAlign = "middle";
+
+      markerElement.style.textAlign = "center";
+
+      markerElement.style.borderRadius = "20px";
+
+      markerElement.style.borderStyle = "solid";
+
+      markerElement.style.borderWidth = "1px";
+
+      markerElement.style.borderColor = "lightgray";
+
+      markerElement.innerHTML =
+        Math.floor(this.store.FilteredApartments[i].price) + "€";
+
+      map.on("load", () => {
+
+        marker, popup;
 
       });
-      let map = this.myMap;
-
-      for (let i = 0; i < this.store.FilteredApartments.length; i++) {
-
-        var markerHeight = 50,
-
-          markerRadius = 10,
-
-          linearOffset = 25;
-
-        var popupOffsets = {
-          top: [0, 0],
-
-          "top-left": [0, 0],
-
-          "top-right": [0, 0],
-
-          bottom: [0, -markerHeight],
-
-          "bottom-left": [
-
-            linearOffset,
-
-            (markerHeight - markerRadius + linearOffset) * -1,
-
-          ],
-          "bottom-right": [
-
-            -linearOffset,
-
-            (markerHeight - markerRadius + linearOffset) * -1,
-
-          ],
-          left: [markerRadius, (markerHeight - markerRadius) * -1],
-
-          right: [-markerRadius, (markerHeight - markerRadius) * -1],
-
-        };
-        var popup = new tt.Popup({ offset: popupOffsets });
-
-        popup.setHTML(`
-                          <div style="width:200px; height:150px; object-fit: contain;" class="popup-box mt-2 ">
-                            <img style="width:100%; height:100%; border-radius:10px;" src="http://127.0.0.1:8000/storage/${this.store.FilteredApartments[i].img_cover_path}" alt="Apartment Image">
-                          </div>
-                          <div style="width:200px" class="mt-3 marker-content text-center">
-                            <h5 class="m-0 ">Appartamento: ${this.store.FilteredApartments[i].name}</h5>
-                            <div>${this.store.FilteredApartments[i].address}</div>
-                          </div>
-                      `);
-
-        popup.addClassName("popup-box");
-
-        var marker = new tt.Marker()
-
-          .setLngLat({
-
-            lng: this.store.FilteredApartments[i].longitude,
-
-            lat: this.store.FilteredApartments[i].latitude,
-
-          })
-
-          .setPopup(popup)
-
-
-          .addTo(map);
-
-        var markerElement = marker.getElement();
-
-        markerElement.style.backgroundColor = "white";
-
-        markerElement.style.width = "80px";
-
-        markerElement.style.height = "20px";
-
-        markerElement.style.lineHeight = "20px";
-
-        markerElement.style.verticalAlign = "middle";
-
-        markerElement.style.textAlign = "center";
-
-        markerElement.style.borderRadius = "20px";
-
-        markerElement.style.borderStyle = "solid";
-
-        markerElement.style.borderWidth = "1px";
-
-        markerElement.style.borderColor = "lightgray";
-
-        markerElement.innerHTML =
-          Math.floor(this.store.FilteredApartments[i].price) + "€";
-
-        map.on("load", () => {
-
-          marker, popup;
-
-        });
-      }
-    }, 1000);
+    }
+    
     window.addEventListener("scroll", function () {
       var scrollButton = document.querySelector(".scroll-to-top");
       if (window.scrollY > 100) {
@@ -524,9 +558,7 @@ export default {
         </div>
       </div>
       <!-- RICERCA INDIRIZZO SE NON CI SONO RISULTATI SULLA PRIMA SEARCH -->
-      <div v-else class="d-flex flex-column align-items-center">
-        <div class="">
-          <div class="d-flex flex-column mt-5">
+      <div v-else >
             <div class="px-2">
               <label for="first-search mt-2">
                 Inserisci un indirizzo alternativo:
@@ -560,13 +592,17 @@ export default {
                 SEARCH
               </button>
             </div>
+          <div v-if="suggestionResult != null" class="position-relative list-box">
+            <ul  id="suggestions">
+              <li
+                class="suggestion-item"
+                @click="saveAddress(elem.address.freeformAddress)"
+                v-for="elem in suggestionResult"
+              >
+                {{ elem.address.freeformAddress }}
+              </li>
+            </ul>
           </div>
-        </div>
-        <div class="position-relative list-box">
-          <ul id="suggestions">
-            <!--SUGGERIMENTI INDIRIZZI GENERATI DA TOMTOM-->
-          </ul>
-        </div>
       </div>
       <!-- MODALE -->
       <div
@@ -670,6 +706,28 @@ input[type="checkbox"]:checked {
   border-color: #ec5a64;
   /* Aggiungi altri stili se necessario */
 }
+
+ #suggestions {
+    background-color: rgba(0, 0, 0, 0.22);
+    padding: 15px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    z-index: 2;
+    border: 2px solid #ec5a64;
+    border-radius: 10px;
+    .suggestion-item {
+      padding: 10px;
+      background-color: white;
+      list-style: none;
+      border-bottom: 1px solid lightgray;
+      transition: all 0.1s ease-in-out;
+      &:hover {
+        background-color: lightgray;
+      }
+    }
+  }
 
 @media (min-width: 680px) {
   #mobile-room-bed-filter {
