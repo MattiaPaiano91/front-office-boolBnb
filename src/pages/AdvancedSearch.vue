@@ -18,11 +18,17 @@ export default {
   data() {
     return {
       store,
+      
       nRooms: "",
+
       nBeds: "",
+
       radius: 20,
+
       services: [],
+
       suggestionResult: null,
+
       center : [0,0]
     };
   },

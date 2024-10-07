@@ -23,8 +23,8 @@ export default {
                
                 <div class="img-box">
                     <div class="img-wrapper">
-                        <img v-if="apartment.img_cover_path" :src="'http://127.0.0.1:8000/storage/'+apartment.img_cover_path" alt="Cover Image">
-                        <img v-else class="alt-img" src="../../img/logos/boolairbnb-favicon.PNG" alt="">
+                        <img v-if="apartment.img_cover_path != null" :src="'http://127.0.0.1:8000/storage/' + apartment.img_cover_path" alt="Cover Image">
+                        <img v-else class="alt-img" src="../../public/img/logos/boolairbnb-favicon.PNG" alt="Immagine non trovata..">
                     </div>
                 </div>
                 <div  id="apartment-details">

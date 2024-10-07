@@ -23,7 +23,7 @@ export default {
                 <span class="badge rounded-pill text-bg-light">In evidenza</span>
                 <div class="img-box">
                     <div class="img-wrapper">
-                        <img v-if="apartment.img_cover_path" :src="'http://127.0.0.1:8000/storage/'+apartment.img_cover_path" alt="Cover Image">
+                        <img v-if="apartment.img_cover_path != null" :src="'http://127.0.0.1:8000/storage/'+apartment.img_cover_path" alt="Cover Image">
                         <img v-else class="alt-img" src="../../img/logos/boolairbnb-favicon.PNG" alt="">
                     </div>
                 </div>
